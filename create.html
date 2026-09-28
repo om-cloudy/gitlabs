@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Create Form</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Forms</div>
+
+  <nav>
+    <a href="index.html">Home</a>
+  </nav>
+</header>
+
+<main class="builder">
+
+  <div class="builder-top">
+
+    <div>
+      <h1>Create Form</h1>
+      <p>Build your own online form.</p>
+    </div>
+
+    <button
+      onclick="saveForm()"
+      class="primary-btn"
+    >
+      Save Form
+    </button>
+
+  </div>
+
+  <section class="form-settings">
+
+    <input
+      id="title"
+      class="title-input"
+      placeholder="Untitled form"
+    >
+
+    <textarea
+      id="description"
+      placeholder="Form description"
+    ></textarea>
+
+  </section>
+
+  <div id="questions"></div>
+
+  <button
+    onclick="addQuestion()"
+    class="add-question"
+  >
+    + Add Question
+  </button>
+
+</main>
+
+<script src="app.js"></script>
+
+</body>
+</html>
+

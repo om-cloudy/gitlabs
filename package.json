@@ -1,0 +1,14 @@
+{
+  "name": "google-form-clone",
+  "version": "1.0.0",
+  "description": "Simple Google Forms clone",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2"
+  }
+}
+

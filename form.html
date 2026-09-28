@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Form</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="public-container">
+
+  <div id="form"></div>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(location.search);
+const formId = params.get("id");
+
+async function loadForm() {
+
+  const response =
+    await fetch(`/api/forms/${formId}`);
+
+  const form = await response.json();
+
+  if (!response.ok) {
+    document.getElementById("form").innerHTML =
+      "<h2>Form not found</h2>";
+    return;
+  }
+
+  document.title = form.title;
+
+  document.getElementById("form").innerHTML = `
+
+    <div class="public-header">
+
+      <h1>${escapeHtml(form.title)}</h1>
+
+      <p>
+        ${escapeHtml(form.description || "")}
+      </p>
+
+    </div>
+
+    <form id="formElement">
+
+      ${form.questions.map((q, index) =>
+        renderQuestion(q, index)
+      ).join("")}
+
+      <button
+        class="primary-btn submit-btn"
+        type="submit"
+      >
+        Submit
+      </button>
+
+    </form>
+  `;
+
+  document
+    .getElementById("formElement")
+    .addEventListener("submit", submitForm);
+}
+
+function renderQuestion(q, index) {
+
+  const required = q.required ? "required" : "";
+
+  let input = "";
+
+  if (q.type === "text") {
+
+    input = `
+      <input
+        type="text"
+        name="q_${q.id}"
+        ${required}
+      >
+    `;
+
+  } else if (q.type === "textarea") {
+
+    input = `
+      <textarea
+        name="q_${q.id}"
+        ${required}
+      ></textarea>
+    `;
+
+  } else if (q.type === "date") {
+
+    input = `
+      <input
+        type="date"
+        name="q_${q.id}"
+        ${required}
+      >
+    `;
+
+  } else if (q.type === "radio") {
+
+    input = q.options.map(option => `
+      <label class="choice">
+
+        <input
+          type="radio"
+          name="q_${q.id}"
+          value="${escapeHtml(option)}"
+          ${required}
+        >
+
+        ${escapeHtml(option)}
+
+      </label>
+    `).join("");
+
+  } else if (q.type === "checkbox") {
+
+    input = q.options.map(option => `
+      <label class="choice">
+
+        <input
+          type="checkbox"
+          name="q_${q.id}"
+          value="${escapeHtml(option)}"
+        >
+
+        ${escapeHtml(option)}
+
+      </label>
+    `).join("");
+
+  } else if (q.type === "select") {
+
+    input = `
+      <select
+        name="q_${q.id}"
+        ${required}
+      >
+
+        <option value="">
+          Select an option
+        </option>
+
+        ${q.options.map(option => `
+          <option value="${escapeHtml(option)}">
+            ${escapeHtml(option)}
+          </option>
+        `).join("")}
+
+      </select>
+    `;
+  }
+
+  return `
+    <div class="public-question">
+
+      <label class="question-title">
+
+        ${index + 1}.
+        ${escapeHtml(q.question)}
+
+        ${q.required ? '<span>*</span>' : ""}
+
+      </label>
+
+      ${input}
+
+    </div>
+  `;
+}
+
+async function submitForm(event) {
+
+  event.preventDefault();
+
+  const formElement =
+    document.getElementById("formElement");
+
+  const formData =
+    new FormData(formElement);
+
+  const data = {};
+
+  for (const [key, value] of formData.entries()) {
+
+    if (data[key]) {
+
+      if (!Array.isArray(data[key])) {
+        data[key] = [data[key]];
+      }
+
+      data[key].push(value);
+
+    } else {
+
+      data[key] = value;
+
+    }
+  }
+
+  const response = await fetch(
+    `/api/forms/${formId}/responses`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(data)
+    }
+  );
+
+  const result = await response.json();
+
+  if (result.success) {
+
+    document.getElementById("form").innerHTML = `
+
+      <div class="success">
+
+        <div class="success-icon">✓</div>
+
+        <h1>Response submitted</h1>
+
+        <p>
+          Your response has been recorded successfully.
+        </p>
+
+        <a
+          href="index.html"
+          class="primary-btn"
+        >
+          Back Home
+        </a>
+
+      </div>
+    `;
+
+  } else {
+
+    alert(
+      result.error ||
+      "Failed to submit response"
+    );
+
+  }
+}
+
+function escapeHtml(text) {
+
+  const div = document.createElement("div");
+
+  div.textContent = text;
+
+  return div.innerHTML;
+}
+
+loadForm();
+
+</script>
+
+</body>
+</html>
+

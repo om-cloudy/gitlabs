@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Builder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Forms</div>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="create.html" class="btn">+ Create Form</a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <div class="page-header">
+    <div>
+      <h1>My Forms</h1>
+      <p>Create and manage your forms</p>
+    </div>
+
+    <a href="create.html" class="primary-btn">
+      + Create Form
+    </a>
+  </div>
+
+  <div id="forms" class="forms-grid"></div>
+
+</main>
+
+<script>
+async function loadForms() {
+  const container = document.getElementById("forms");
+
+  const response = await fetch("/api/forms");
+  const forms = await response.json();
+
+  if (forms.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <h2>No forms yet</h2>
+        <p>Create your first form.</p>
+        <a href="create.html" class="primary-btn">
+          Create Form
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = forms.map(form => `
+    <div class="form-card">
+
+      <div class="form-icon">📝</div>
+
+      <h2>${escapeHtml(form.title)}</h2>
+
+      <p>
+        ${escapeHtml(form.description || "No description")}
+      </p>
+
+      <small>
+        Created: ${new Date(form.created_at).toLocaleString()}
+      </small>
+
+      <div class="card-actions">
+
+        <a
+          href="form.html?id=${form.id}"
+          class="primary-btn"
+        >
+          Open Form
+        </a>
+
+        <a
+          href="responses.html?id=${form.id}"
+          class="secondary-btn"
+        >
+          Responses
+        </a>
+
+        <button
+          onclick="deleteForm(${form.id})"
+          class="danger-btn"
+        >
+          Delete
+        </button>
+
+      </div>
+
+    </div>
+  `).join("");
+}
+
+async function deleteForm(id) {
+  if (!confirm("Delete this form?")) return;
+
+  await fetch(`/api/forms/${id}`, {
+    method: "DELETE"
+  });
+
+  loadForms();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+loadForms();
+</script>
+
+</body>
+</html>
+
